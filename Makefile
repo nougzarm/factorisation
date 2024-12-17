@@ -8,7 +8,7 @@ CPFLAGS = -Wall -Wpointer-arith -O2
 
 
 test: test.o $(LIBR).o
-	$(CC) $(CPFLAGS) -o test  test.o $(LIBR).o -lm
+	$(CC) $(CPFLAGS) -o test  test.o $(LIBR).o -lm -L/usr/local/lib/ -lgmp
 
 test.o: $(LIBR).h test.h test.c
 	$(CC) $(CPFLAGS) -c test.c -L/usr/local/lib/ -lgmp
@@ -17,4 +17,4 @@ $(LIBR).o: $(LIBR).c $(LIBR).h
 	$(CC) $(CPFLAGS) -c $(LIBR).c -L/usr/local/lib/ -lgmp
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) test

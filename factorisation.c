@@ -200,7 +200,6 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     mpz_t second;
     mpz_set(second, *premier);
     FPA1(&second, n);
-    int indice = 1; // Pas nécessaire
 
     mpz_t difference;
     mpz_sub(difference, second, *premier);  // difference = second-premier
@@ -219,7 +218,6 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
         FPA1(premier, n);
         FPA1(&second, n);
         FPA1(&second, n);
-        indice++; 
 
         mpz_sub(difference, second, *premier);
         mpz_mod(candidat_comparaison, difference, *n);
@@ -228,8 +226,14 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
         int condition1 = mpz_cmp(candidat_facteur, *n);
         int condition2 = mpz_cmp(candidat_facteur, mpz_1);
     }
-    // A finir
-    *resultat = candidat_facteur;
+
+    mpz_set(*resultat, candidat_facteur);   // Stockage du résultat
+    //  Suppression de la mémoire allouée
+    mpz_clear(second);
+    mpz_clear(difference);
+    mpz_clear(candidat_comparaison);
+    mpz_clear(candidat_facteur);
+    mpz_clear(mpz_1);
     return 1;
 }
 
