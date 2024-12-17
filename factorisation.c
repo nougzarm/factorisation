@@ -203,26 +203,27 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c){
 }
 
 int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
-    mpz_t mpz_1;
+    mpz_t mpz_1, mpz_c;
     mpz_init_set_str(mpz_1, "1", 10);
+    mpz_init_set_str(mpz_c, "1", 10);   // La constante utilisée dans la FPA
 
+    //  x_i (=premier) et x_2i (=second) de la suite engendrée par la FPA
     FPA1(premier, n, &mpz_1);
     mpz_t second;
     mpz_init(second);
     mpz_set(second, *premier);
     FPA1(&second, n, &mpz_1);
-    mpz_t difference;
-    mpz_init(difference);
-    mpz_sub(difference, second, *premier);  // difference = second-premier
-    mpz_t candidat_comparaison; 
-    mpz_init(candidat_comparaison);
-    mpz_mod(candidat_comparaison, difference, *n);    // candidat_comparaison = second-premier [n]
-    mpz_t candidat_facteur;
-    mpz_init(candidat_facteur);
-    mpz_gcd(candidat_facteur, *n, candidat_comparaison);    // pgcd(n, candidat_comparaison);
 
-    int condition1 = mpz_cmp(candidat_facteur, *n);
-    int condition2 = mpz_cmp(candidat_facteur, mpz_1);
+    //  Calcul de pgcd(x_2i-x_i, n)
+    mpz_t potentiel_facteur;
+    mpz_init(potentiel_facteur);
+    mpz_sub(potentiel_facteur, second, *premier);   // potentiel_facteur = second-premier
+    mpz_mod(potentiel_facteur, potentiel_facteur, *n);  // potentiel_facteur = potentiel_facteur [n]
+    mpz_gcd(potentiel_facteur, *n, potentiel_facteur);  // potentiel_facteur = pgcd(potentiel_facteur, n);
+
+    //  Compare le potentiel_facteur avec 1 et n
+    int condition1 = mpz_cmp(potentiel_facteur, *n);
+    int condition2 = mpz_cmp(potentiel_facteur, mpz_1);
 
     while(condition1*condition2 == 0){
         printf("debut boucle\n");
@@ -231,18 +232,18 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
         FPA1(&second, n, &mpz_1);
         FPA1(&second, n, &mpz_1);
         printf("ici\n");
-        mpz_sub(difference, second, *premier);
-        mpz_mod(candidat_comparaison, difference, *n);
-        mpz_gcd(candidat_facteur, *n, candidat_comparaison);
+        mpz_sub(potentiel_facteur, second, *premier);
+        mpz_mod(potentiel_facteur, potentiel_facteur, *n);
+        mpz_gcd(potentiel_facteur, *n, potentiel_facteur);
         printf("apres calcul pgcd\n");
 
-        condition1 = mpz_cmp(candidat_facteur, *n);
-        condition2 = mpz_cmp(candidat_facteur, mpz_1);
+        condition1 = mpz_cmp(potentiel_facteur, *n);
+        condition2 = mpz_cmp(potentiel_facteur, mpz_1);
         printf("apres calcul condition du pgcd\n");
         printf("fin de la boucle\n");
     }
 
-    mpz_set(*resultat, candidat_facteur);   // Stockage du résultat
+    mpz_set(*resultat, potentiel_facteur);   // Stockage du résultat
     printf("stockage finie\n");
     //  Suppression de la mémoire allouée
     //  mpz_clears(second, difference, candidat_comparaison, candidat_facteur, mpz_1);
@@ -250,8 +251,3 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     return 1;
 }
 
-
-/*  Version plus optimisée de la factorisation de Rho-Pollard: 
-        - En mémorisant mpz_1
-        - 
-*/
