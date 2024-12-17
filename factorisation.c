@@ -5,12 +5,11 @@
     2. Test de primalité
     3. Factorisation
         - Factorisation de Rho-Pollard 
-        - Factorisation de Rho-Pollard optimisée
-        - Factorisation via crible quadratique
+        - Factorisation via crible quadratique (algorithme de Dixon)
  */
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                                           FONCTIONS INTERMEDIAIRES                                             |   
+    |                                         1. FONCTIONS INTERMEDIAIRES                                            |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
@@ -98,7 +97,7 @@ int jacobi(int a, int b){
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                             FONCTIONS PRIMALITE (utiles pour la crible quadratique)                            |   
+    |                           2. FONCTIONS PRIMALITE (utiles pour le crible quadratique)                           |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
@@ -185,20 +184,19 @@ int test_miller_rabin(int n, int k){
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                                                 FACTORISATION                                                  |   
+    |                                               3. FACTORISATION                                                 |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
 /*  Factorisation de Rho-Pollard: 
         - Via librairie GMP
-        - choix du FPA FPA : y -> y^2 + c
+        - choix du FPA : y -> y^2 + c
 */
 void FPA1(mpz_t* y, mpz_t* n, mpz_t* c){
     mpz_mul(*y, *y, *y);    // y -> y^2
     mpz_mod(*y, *y, *n);    // y -> y mod n
     mpz_add(*y, *y, *c);    // y -> y+c
     mpz_mod(*y, *y, *n);    // y -> y mod n
-    gmp_printf ("Résultat : %Zd\n", *y);
     return;
 }
 
@@ -226,6 +224,7 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     int condition2 = mpz_cmp(potentiel_facteur, mpz_1);
 
     while(condition1*condition2 == 0){
+        gmp_printf ("Potentiel facteur : %Zd\n", potentiel_facteur);
         // On actualise les termes de la suite
         FPA1(premier, n, &mpz_c);
         FPA1(&second, n, &mpz_c);
@@ -239,8 +238,7 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
         condition2 = mpz_cmp(potentiel_facteur, mpz_1);
     }
     mpz_set(*resultat, potentiel_facteur);   // Stockage du résultat
-    //  Suppression de la mémoire allouée
-    //  mpz_clears(second, difference, candidat_comparaison, candidat_facteur, mpz_1);
+    mpz_clears(potentiel_facteur, mpz_c, mpz_1);    //  Suppression de la mémoire allouée
     return 1;
 }
 
