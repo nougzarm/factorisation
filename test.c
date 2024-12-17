@@ -20,8 +20,12 @@ int main() {
     // CONFIGURATION - CHOIX DES PARAMETRES ----------------------------------------
     mpz_t n1;
     mpz_t n2;
-    mpz_init_set_str(n1, "52590354472497239257283147", 10);
+    mpz_init_set_str(n1, "52590354464570687296135717939971", 10);
     mpz_init_set_str(n2, "52590354464570687296135717939971", 10);
+
+    /*  n1 = 52590354472497239257283147
+        n2 = 52590354464570687296135717939971 
+    */
 
     int n = 1042387;
     int P = 50;
@@ -52,8 +56,8 @@ void test(int choix_test, mpz_t* n1, mpz_t* n2, int n, int P, int A){
         factorisation_rho_pollard_sm(&mpz_1, n1, &resultat);
         printf("Je suis là rho poll fini\n");
         gmp_printf("Voici un facteur de n_1 : %Zd\n", resultat);
-        mpz_clear(resultat);
-        mpz_clear(mpz_1);
+        // mpz_clear(resultat);
+        // mpz_clear(mpz_1);
 
     }
     else if(choix_test == 2){

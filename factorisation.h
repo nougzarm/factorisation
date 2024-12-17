@@ -22,7 +22,7 @@ typedef struct{
         - Via librairie GMP
         - avec comme FPA : y -> y^2 + 1
 */
-void FPA1(mpz_t* y, mpz_t* n);   // Fonction pseudo-aléatoire FPA1 : x -> x^2 + 1 [n]
+void FPA1(mpz_t* y, mpz_t* n, mpz_t* mpz_1);   // Fonction pseudo-aléatoire FPA1 : x -> x^2 + 1 [n]
 int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
 
 
