@@ -1,5 +1,13 @@
 #include "factorisation.h"
 
+/*  SOMMAIRE : 
+    1. Fonctions maths intermédiaires
+    2. Test de primalité
+    3. Factorisation
+        - Factorisation de Rho-Pollard 
+        - Factorisation de Rho-Pollard optimisée
+        - Factorisation via crible quadratique
+ */
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
     |                                           FONCTIONS INTERMEDIAIRES                                             |   
