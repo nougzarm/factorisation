@@ -15,7 +15,7 @@ int main() {
     If the string is a correct base base number, the function returns 0; if an error occurs it returns
     −1. rop is initialized even if an error occurs. (I.e., you have to call mpz_clear for it.)   */
 
-    int choix_test = 3;
+    int choix_test = 1;
 
     // CONFIGURATION - CHOIX DES PARAMETRES ----------------------------------------
     mpz_t n1;
@@ -45,9 +45,17 @@ int main() {
 // Définition des tests
 void test(int choix_test, mpz_t* n1, mpz_t* n2, int n, int P, int A){
     if(choix_test == 1){
-        // int resultat = factorisation_rho 
-    }
+        mpz_t mpz_1;
+        mpz_init_set_str(mpz_1, "1", 10);
 
+        mpz_t resultat;
+        factorisation_rho_pollard_sm(&mpz_1, n1, &resultat);
+        printf("Je suis là rho poll fini\n");
+        gmp_printf("Voici un facteur de n_1 : %Zd\n", resultat);
+        mpz_clear(resultat);
+        mpz_clear(mpz_1);
+
+    }
     else if(choix_test == 2){
         
     }

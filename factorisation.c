@@ -191,29 +191,36 @@ int test_miller_rabin(int n, int k){
  */
 /*  Factorisation de Rho-Pollard: 
         - Via librairie GMP
-        - avec comme FPA : y -> y^2 + 1
+        - choix du FPA FPA : y -> y^2 + 1
 */
 void FPA1(mpz_t* y, mpz_t* n){
     mpz_mul(*y, *y, *y);
     mpz_t mpz_1;
-    mpz_set_ui(mpz_1, 1);
+    mpz_init_set_str(mpz_1, "1", 10);
     mpz_add(*y, *y, mpz_1);
     mpz_clear(mpz_1);
-    // gmp_printf ("Résultat : %Zd\n", r);
+    mpz_mod(*y, *y, *n);
+    gmp_printf ("Résultat : %Zd\n", *y);
     return;
 }
 
 int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     FPA1(premier, n);
+    gmp_printf("premier = %Zd\n", premier);
     mpz_t second;
+    mpz_init(second);
     mpz_set(second, *premier);
+    gmp_printf("second = %Zd\n", second);
     FPA1(&second, n);
-
+    gmp_printf("second = %Zd\n", second);
     mpz_t difference;
+    mpz_init(difference);
     mpz_sub(difference, second, *premier);  // difference = second-premier
     mpz_t candidat_comparaison; 
+    mpz_init(candidat_comparaison);
     mpz_mod(candidat_comparaison, difference, *n);    // candidat_comparaison = second-premier [n]
     mpz_t candidat_facteur;
+    mpz_init(candidat_facteur);
     mpz_gcd(candidat_facteur, *n, candidat_comparaison);    // pgcd(n, candidat_comparaison);
 
     mpz_t mpz_1;
@@ -221,7 +228,10 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     int condition1 = mpz_cmp(candidat_facteur, *n);
     int condition2 = mpz_cmp(candidat_facteur, mpz_1);
 
+    printf("Je suis là\n");
     while(condition1*condition2 == 0){
+        printf("Je suis là\n");
+
         // On actualise les termes de la suite
         FPA1(premier, n);
         FPA1(&second, n);
@@ -237,11 +247,7 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
 
     mpz_set(*resultat, candidat_facteur);   // Stockage du résultat
     //  Suppression de la mémoire allouée
-    mpz_clear(second);
-    mpz_clear(difference);
-    mpz_clear(candidat_comparaison);
-    mpz_clear(candidat_facteur);
-    mpz_clear(mpz_1);
+    mpz_clears(second, difference, candidat_comparaison, candidat_facteur, mpz_1);
     return 1;
 }
 
