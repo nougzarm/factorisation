@@ -194,9 +194,10 @@ int test_miller_rabin(int n, int k){
         - choix du FPA FPA : y -> y^2 + c
 */
 void FPA1(mpz_t* y, mpz_t* n, mpz_t* c){
-    mpz_mul(*y, *y, *y);
-    mpz_add(*y, *y, *c);
-    mpz_mod(*y, *y, *n);
+    mpz_mul(*y, *y, *y);    // y -> y^2
+    mpz_mod(*y, *y, *n);    // y -> y mod n
+    mpz_add(*y, *y, *c);    // y -> y+c
+    mpz_mod(*y, *y, *n);    // y -> y mod n
     gmp_printf ("Résultat : %Zd\n", *y);
     return;
 }
