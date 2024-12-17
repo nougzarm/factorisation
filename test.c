@@ -49,13 +49,13 @@ int main() {
 // Définition des tests
 void test(int choix_test, mpz_t* n1, mpz_t* n2, int n, int P, int A){
     if(choix_test == 1){
+        // Choix du premier terme de la suite de Rho-Pollard
         mpz_t mpz_1;
         mpz_init_set_str(mpz_1, "1", 10);
 
         mpz_t resultat;
         factorisation_rho_pollard_sm(&mpz_1, n1, &resultat);
-        printf("Je suis là rho poll fini\n");
-        gmp_printf("Voici un facteur de n_1 : %Zd\n", resultat);
+        gmp_printf("Factorisation terminée, voici un facteur de n_1 : %Zd\n", resultat);
         // mpz_clear(resultat);
         // mpz_clear(mpz_1);
 

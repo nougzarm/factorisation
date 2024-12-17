@@ -205,14 +205,14 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c){
 int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     mpz_t mpz_1, mpz_c;
     mpz_init_set_str(mpz_1, "1", 10);
-    mpz_init_set_str(mpz_c, "1", 10);   // La constante utilisée dans la FPA
+    mpz_init_set_str(mpz_c, "3", 10);   // La constante utilisée dans la FPA
 
     //  x_i (=premier) et x_2i (=second) de la suite engendrée par la FPA
-    FPA1(premier, n, &mpz_1);
+    FPA1(premier, n, &mpz_c);
     mpz_t second;
     mpz_init(second);
     mpz_set(second, *premier);
-    FPA1(&second, n, &mpz_1);
+    FPA1(&second, n, &mpz_c);
 
     //  Calcul de pgcd(x_2i-x_i, n)
     mpz_t potentiel_facteur;
@@ -226,28 +226,21 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     int condition2 = mpz_cmp(potentiel_facteur, mpz_1);
 
     while(condition1*condition2 == 0){
-        printf("debut boucle\n");
         // On actualise les termes de la suite
-        FPA1(premier, n, &mpz_1);
-        FPA1(&second, n, &mpz_1);
-        FPA1(&second, n, &mpz_1);
-        printf("ici\n");
+        FPA1(premier, n, &mpz_c);
+        FPA1(&second, n, &mpz_c);
+        FPA1(&second, n, &mpz_c);
+        // On recalcule le potentiel_facteur
         mpz_sub(potentiel_facteur, second, *premier);
         mpz_mod(potentiel_facteur, potentiel_facteur, *n);
         mpz_gcd(potentiel_facteur, *n, potentiel_facteur);
-        printf("apres calcul pgcd\n");
-
+        // Actualisation des conditions
         condition1 = mpz_cmp(potentiel_facteur, *n);
         condition2 = mpz_cmp(potentiel_facteur, mpz_1);
-        printf("apres calcul condition du pgcd\n");
-        printf("fin de la boucle\n");
     }
-
     mpz_set(*resultat, potentiel_facteur);   // Stockage du résultat
-    printf("stockage finie\n");
     //  Suppression de la mémoire allouée
     //  mpz_clears(second, difference, candidat_comparaison, candidat_facteur, mpz_1);
-    printf("mémoire suppimmé\n");
     return 1;
 }
 
