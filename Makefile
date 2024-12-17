@@ -18,5 +18,3 @@ $(LIBR).o: $(LIBR).c $(LIBR).h
 
 clean:
 	rm -f $(OBJS)
-
-
