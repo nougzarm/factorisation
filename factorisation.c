@@ -94,6 +94,19 @@ int jacobi(int a, int b){
     }
 }
 
+void affichage_liste(liste* l){
+    if(l->taille == 0){
+        printf("vide\n");
+    }
+    else{
+        printf("[");
+        for(int i=0; i<l->taille-1; i++){
+            printf("%d, ", l->element[i]);
+        }
+        printf("%d]", l->element[l->taille-1]);
+    }
+}
+
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
@@ -203,7 +216,7 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c){
 int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     mpz_t mpz_1, mpz_c;
     mpz_init_set_str(mpz_1, "1", 10);
-    mpz_init_set_str(mpz_c, "3", 10);   // La constante utilisée dans la FPA
+    mpz_init_set_str(mpz_c, "1", 10);   // La constante utilisée dans la FPA
 
     //  x_i (=premier) et x_2i (=second) de la suite engendrée par la FPA
     FPA1(premier, n, &mpz_c);
@@ -238,7 +251,35 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
         condition2 = mpz_cmp(potentiel_facteur, mpz_1);
     }
     mpz_set(*resultat, potentiel_facteur);   // Stockage du résultat
-    mpz_clears(potentiel_facteur, mpz_c, mpz_1);    //  Suppression de la mémoire allouée
+    // mpz_clears(potentiel_facteur, mpz_c, mpz_1);    //  Suppression de la mémoire allouée
     return 1;
 }
 
+
+/*  Factorisation via l'algorithme de Dixon: 
+        Utilisant le crible quadratique:
+            - Etant données les bornes P et A, on prendra comme base de premiers:
+                B = {p premier | p<P et jacobi(n,p)=1}
+              On définira ensuite l'ensemble
+                S = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
+              Et on cherche les entiers B-lisses de cet ensemble
+              (on essaye de trouver |B|+1 tels éléments)
+*/
+void base_de_premiers(int n, int P, liste* B){
+    B->taille = 0;
+    B->element = calloc(P, sizeof(int));
+    int test_primalite;
+    int precision_test_primalite = 10;
+    int test_jacobi;
+    for(int i = 2; i<P; i++){
+        test_jacobi = jacobi(n, i);
+        if(test_jacobi == 1){
+            test_primalite = test_solovay_strassen(i, precision_test_primalite);
+            if(test_primalite == 1){
+                B->taille++;
+                B->element[B->taille-1] = i;
+            }
+        }
+    }
+    B->element = realloc(B->element, B->taille*sizeof(int));
+}

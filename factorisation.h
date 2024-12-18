@@ -26,6 +26,8 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c);   // Fonction pseudo-aléatoire FPA1 : 
 int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
 
 
+void base_de_premiers(int n, int P, liste* B);
+
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
@@ -68,5 +70,6 @@ int pgcd(int a, int b);                 //  PGCD
 int partie_entiere(double n);           //  Partie entière de n
 int racine_carree_entiere_mn(int n);    //  Racine carrée entière de n (algo naïf)
 int jacobi(int a, int b);       //  Symbole de Jacobi
+void affichage_liste(liste* l); //  Permet l'affichage d'une liste
 
 #endif // TEST_PRIMALITE_INCLUDED

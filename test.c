@@ -3,25 +3,20 @@
 /* En fonction de la valeur de choix_test :
     1. Factorisation de n1 via Rho-Pollard (FPA0)
     2. Factorisation de n via crible quadratique
+    10. Affichage base de premiers (crible quadratique)
 
 */
 
 int main() {
     // CHOIX DE L'OPÉRATION --------------------------------------------------------
-
-    /* Initialisation des entiers:  int mpz_init_set_str (mpz t rop, const char *str, int base) [Function]
-
-    Initialize rop and set its value like mpz_set_str (see its documentation above for details).
-    If the string is a correct base base number, the function returns 0; if an error occurs it returns
-    −1. rop is initialized even if an error occurs. (I.e., you have to call mpz_clear for it.)   */
-
-    int choix_test = 1;
+    int choix_test = 10;
 
     // CONFIGURATION - CHOIX DES PARAMETRES ----------------------------------------
     mpz_t n1;
-    mpz_init_set_str(n1, "2647643137", 10);
+    mpz_init_set_str(n1, "52590354472497239257283147", 10);
 
-    /*  n1 = 52590354472497239257283147
+    /*  Exemples d'entiers à décomposer:
+        n1 = 52590354472497239257283147
         n2 = 52590354464570687296135717939971 
     */
 
@@ -38,6 +33,7 @@ int main() {
     test(choix_test, &n1, n, P, A);
     printf("\n----------------------------------------------------------------- \n");
 
+    // SUPPRESSION DE LA MEMOIRE ALLOUEE
     mpz_clear(n1);
     return 1;
 }
@@ -57,6 +53,13 @@ void test(int choix_test, mpz_t* n1, int n, int P, int A){
     }
     else if(choix_test == 2){
         
+    }
+    else if(choix_test == 10){
+        liste B;
+        base_de_premiers(n, P, &B);
+        printf("Voici la base de premiers de n=%d du crible quadratique pour la borne P=%d : B = ", n, P);
+        affichage_liste(&B);
+        free(B.element);
     }
 
     return;
