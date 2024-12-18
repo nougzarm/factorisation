@@ -6,11 +6,18 @@
 #include <math.h>
 #include <gmp.h>
 
-//  Structure de liste 
+//  Structure de liste (pour stocker une base de premiers par exemple)
 typedef struct{
     int* element;
     int taille;
 }liste;
+
+//  Structure permettant de représenter la décomposition d'un entier
+typedef struct{
+    int valeur;
+    int* valuation;
+    liste* base_premiers;
+}decomposition;
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
@@ -26,7 +33,18 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c);   // Fonction pseudo-aléatoire FPA1 : 
 int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
 
 
+/*  Factorisation via l'algorithme de Dixon: 
+        - Utilisant le crible quadratique:
+          Etant données les bornes P et A, on prendra comme base de premiers:
+            B = {p premier | p<P et jacobi(n,p)=1}
+*/
 void base_de_premiers(int n, int P, liste* B);
+/*  On définira ensuite l'ensemble
+        S = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
+    Et on cherche les entiers B-lisses de cet ensemble
+    (on essaye de trouver |B|+1 tels éléments) */
+int valuation(int b, int p);
+int decomposition_entier(int b, liste* base_premiers, decomposition* D);
 
 
 /*  |----------------------------------------------------------------------------------------------------------------|
@@ -61,11 +79,10 @@ int test_miller_rabin(int n, int k);
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
-int ordre_deux(int m);          //  La 2-valuation de m
-int puissance(int m, int e);    //  Renvoie m puissance e
-int modulo(int a, int b);                       //  Renvoie a modulo b
-int puissance_modulo(int m, int e, int p);      //  Renvoie m^e modulo p
-int inverse(int a, int p);                      //  Inverse de a dans Z/pZ lorsque pgcd(a,p)=1
+int ordre_deux(int m);          //  La 2-valuation de m (peut être remplacé par valuation(m, 2))
+int puissance(int m, int e);    //  Renvoie m^e
+int modulo(int a, int b);                       //  Renvoie a mod b
+int puissance_modulo(int m, int e, int p);      //  Renvoie m^e mod p
 int pgcd(int a, int b);                 //  PGCD
 int partie_entiere(double n);           //  Partie entière de n
 int racine_carree_entiere_mn(int n);    //  Racine carrée entière de n (algo naïf)

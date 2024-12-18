@@ -56,6 +56,16 @@ int pgcd(int a, int b){
     return r1;
 }
 
+int partie_entiere(double n){
+    int partie_ent = (int)floor(n);
+    return partie_ent;
+}
+
+int racine_carree_entiere_mn(int n){
+    int racine = partie_entiere(sqrt((double)n));
+    return racine;
+}
+
 int jacobi(int a, int b){
     a = modulo(a, b);
     
@@ -282,4 +292,17 @@ void base_de_premiers(int n, int P, liste* B){
         }
     }
     B->element = realloc(B->element, B->taille*sizeof(int));
+}
+
+int valuation(int b, int p){
+    int i = 0;
+    while (b % p != 0){
+        i++;
+        b = b/2;
+    }
+    return i;
+}
+
+int decomposition_entier(int b, liste* base_premiers, decomposition* D){
+
 }
