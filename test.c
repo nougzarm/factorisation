@@ -20,7 +20,8 @@ int main() {
         n = 1042387
     */
 
-    int n = 18;
+    mpz_t n;
+    mpz_init_set_str(n, "45", 10);
     int P = 50;
     int A = 500;
 
@@ -28,21 +29,22 @@ int main() {
     printf("----------------------------------------------------------------- \n");
     printf("Définitions :\n");
     gmp_printf("  - n_1 = %Zd\n", n1);
-    printf("  - n = %d, P = %d, A = %d\n", n, P, A);
+    gmp_printf("  - n = %Zd, P = %d, A = %d\n", n, P, A);
     printf("\n");
     
     // LANCEMENT DE L'ALGORITHME ---------------------------------------------------
-    test(choix_test, &n1, n, P, A);
+    test(choix_test, &n1, &n, P, A);
     printf("\n----------------------------------------------------------------- \n");
 
     // SUPPRESSION DE LA MEMOIRE ALLOUEE
+    mpz_clear(n);
     mpz_clear(n1);
     return 1;
 }
 
 
 // Définition des tests
-void test(int choix_test, mpz_t* n1, int n, int P, int A){
+void test(int choix_test, mpz_t* n1, mpz_t* n, int P, int A){
     /*  Décomposition de n1 via l'algorithme de Rho-Pollard  */
     if(choix_test == 1){
         // Choix du premier terme de la suite de Rho-Pollard
@@ -57,7 +59,7 @@ void test(int choix_test, mpz_t* n1, int n, int P, int A){
 
     /*  Décomposition de n via le crible quadratique  */
     else if(choix_test == 2){
-        printf("Factorisation de n = %d, avec les bornes P = %d et A = %d :\n", n, P, A);
+        gmp_printf("Factorisation de n = %Zd, avec les bornes P = %d et A = %d :\n", *n, P, A);
         mpz_t resultat;
         mpz_init(resultat);
         int reussite = crible_quadratique(n, P, A, &resultat);
@@ -75,21 +77,6 @@ void test(int choix_test, mpz_t* n1, int n, int P, int A){
             printf("\nChoisir de nouvelles valeurs de P et/ou A");
         }
         mpz_clear(resultat);
-    }
-
-    else if(choix_test == -1){
-        liste B;
-        base_de_premiers(n, P, &B);
-        printf("Voici la base de premiers de n=%d du crible quadratique pour la borne P=%d : B = ", n, P);
-        affichage_liste(&B);
-        int m=3*11*11*23*43;
-        decomposition dec_m;
-        int res = decomposition_entier(m, &B, &dec_m);
-        printf("\nessayons de décomposer m=%d dans cette base : résultat = %d\n", m, res);
-        printf("\nVoici sa décomposition : m = %d = ", m);
-        affichage_decomposition(&dec_m);
-        // free(dec_m.valuation);
-        free(B.element);
     }
     return;
 }

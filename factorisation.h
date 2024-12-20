@@ -12,19 +12,24 @@ typedef struct{
     int taille;
 }liste;
 
+typedef struct{
+    mpz_t* element;
+    int taille;
+}famille;
+
 //  Structure permettant de représenter la décomposition d'un entier
 typedef struct{
-    int valeur;
+    mpz_t valeur;
     int* valuation;
-    liste* base_premiers;
+    famille* base_premiers;
 }decomposition;
 
 //  Structure d'ensemble d'entiers B-lisses (où B est une base de premiers)
 typedef struct{
     int cardinal;
-    int* t_element;
+    mpz_t* t_element;
     decomposition* element_dec;
-    liste* base_premiers;
+    famille* base_premiers;
 }ensemble_b_lisse;
 
 /*  |----------------------------------------------------------------------------------------------------------------|
@@ -51,15 +56,15 @@ int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
         Etant données les bornes P et A, on prendra comme base de premiers:
         B = {p premier | p<P et jacobi(n,p)=1}
 */
-void base_de_premiers(int n, int P, liste* B);
+void base_de_premiers(mpz_t* n, int P, famille* B);
 /*  On définira ensuite l'ensemble
         S' = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
     Et on prend S, le sous-ensemle formé des éléments B-lisses. Remarques: 
         - S.t_element contient les indices t
         - S.element_dec contient la décomposition de t^2-n dans S.base_premiers = B  */
-int valuation(int b, int p);
-int decomposition_entier(int b, liste* base_premiers, decomposition* D);
-void ensemble_crible_quadratique(int n, int A, liste* B, ensemble_b_lisse* S);
+int valuation(mpz_t* b, mpz_t* p);
+int decomposition_entier(mpz_t* b, famille* B, decomposition* D);
+void ensemble_crible_quadratique(mpz_t* n, int A, famille* B, ensemble_b_lisse* S);
 /*  On choisit un sous-ensemble de S à |B|+1 éléments. Il se peut que le sous-ensemble
     choisi ne convienne pas. Il nous faut ainsi une fonction permettant de 'classifier' 
     un certain nombre de ces sous-ensembles.
@@ -94,20 +99,7 @@ int verif_noyau(liste* matrice, int nb_ligne, int nb_colonne, liste* ker);
         -1 : n est premier (d'après Solovay-Strassen avec une précision k=10)
         0 : L'algorithme a réussi à décomposer n
         1 : L'algorithme n'a réussi à décomposer n avec aucun sous-ensemble  */
-int crible_quadratique(int n, int P, int A, mpz_t* resultat);
-
-
-/*  |----------------------------------------------------------------------------------------------------------------|
-    |----------------------------------------------------------------------------------------------------------------|
-    |                            FONCTION PRIMALITE (nécessaire pour le crible quadratique)                          |   
-    |----------------------------------------------------------------------------------------------------------------|
-    |----------------------------------------------------------------------------------------------------------------|                                                     
- */
-/*  Test de Solovay-Strassen : 
-        - Si renvoie 0 alors n n'est pas premier
-        - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(2^k)
-*/
-int test_solovay_strassen(int n, int k);
+int crible_quadratique(mpz_t* n, int P, int A, mpz_t* resultat);
 
 
 /*  |----------------------------------------------------------------------------------------------------------------|
@@ -116,13 +108,7 @@ int test_solovay_strassen(int n, int k);
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
-int puissance(int m, int e);    //  Renvoie m^e
 int modulo(int a, int b);                       //  Renvoie a mod b
-int puissance_modulo(int m, int e, int p);      //  Renvoie m^e mod p
-int pgcd(int a, int b);                 //  PGCD
-int partie_entiere(double n);           //  Partie entière de n
-int racine_carree_entiere_mn(int n);    //  Racine carrée entière de n (algo naïf)
-int jacobi(int a, int b);       //  Symbole de Jacobi
 void affichage_liste(liste* l); //  Permet l'affichage d'une liste
 void affichage_decomposition(decomposition* D); //  Affiche la décomposition D (de l'entier D->valeur)
 void affichage_ensemble(ensemble_b_lisse* S);   //  Affiche l'ensemble S d'éléments lisses.
