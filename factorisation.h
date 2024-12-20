@@ -29,7 +29,7 @@ typedef struct{
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                                           FONCTIONS FACTORISATION                                              |   
+    |                                         FACTORISATION DE RHO-POLLARD                                           |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
@@ -41,59 +41,73 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c);   // Fonction pseudo-aléatoire FPA1 : 
 int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
 
 
-/*  Factorisation via l'algorithme de Dixon: 
-        - Utilisant le crible quadratique:
-          Etant données les bornes P et A, on prendra comme base de premiers:
-            B = {p premier | p<P et jacobi(n,p)=1}
+/*  |----------------------------------------------------------------------------------------------------------------|
+    |----------------------------------------------------------------------------------------------------------------|
+    |                                   FACTORISATION VIA LE CRIBLE QUADRATIQUE                                      |   
+    |----------------------------------------------------------------------------------------------------------------|
+    |----------------------------------------------------------------------------------------------------------------|                                                     
+ */
+/*  Factorisation via le crible quadratique: 
+        Etant données les bornes P et A, on prendra comme base de premiers:
+        B = {p premier | p<P et jacobi(n,p)=1}
 */
 void base_de_premiers(int n, int P, liste* B);
 /*  On définira ensuite l'ensemble
-        S = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
-    Et on cherche les entiers B-lisses de cet ensemble
-    (on essaye de trouver |B|+1 tels éléments) */
+        S' = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
+    Et on prend S, le sous-ensemle formé des éléments B-lisses. Remarques: 
+        - S.t_element contient les indices t
+        - S.element_dec contient la décomposition de t^2-n dans S.base_premiers = B  */
 int valuation(int b, int p);
 int decomposition_entier(int b, liste* base_premiers, decomposition* D);
 void ensemble_crible_quadratique(int n, int A, liste* B, ensemble_b_lisse* S);
-/*  On choisit un sous-ensemble de S à |B|+1 éléments (de manière exhaustive)
+/*  On choisit un sous-ensemble de S à |B|+1 éléments. Il se peut que le sous-ensemble
+    choisi ne convienne pas. Il nous faut ainsi une fonction permettant de 'classifier' 
+    un certain nombre de ces sous-ensembles.
     Pour cela on crée une fonction choisissant une injection |B|+1 dans |S|
     Ici, on classifie ces injections suivant num_injection
-    Ainsi, dans le crible quadratique on pourra parcourir ces injetions  */
+    Ainsi, dans le crible quadratique on pourra parcourir ces injetions
+    Remarque : ici nous considérons uniquement les injections de base qui sont les :
+        x -> x + num_injection  */
 void injection(int a, int b, int num_injection, liste* L);
-
-/*  On prend ce sous-ensemble à |B|+1 éléments B-lisses et on écris sa matrice
+/*  Une fois qu'on fixe un sous-ensemble noté sous_ensemble, on écris sa matrice
     qui, par définitions, contient la décomposition du i-ème éléments dans sa i-ème colonne
-    ici la liste sous-ensemble est issue de injection() et la matrice résultat est
-    de dimension |B|x|sous_ensemble| */
+    La matrice résultat est de dimension |B|x|sous_ensemble| */
 void matrice_de_decomposition(liste* sous_ensemble, ensemble_b_lisse* S, liste* matrice);
+/*  On applique le pivot de Gauss à la matrice précédemment calculée et on extrait un élément
+    non nul de son noyeau.
+    Les fonctions appliquant les opérations de base nécessaires pour le pivot de pivot Gauss:
+        1. Echange de lignes
+        2. Addition de lignes
+        3. Recherche de la prochaine ligne à déplacer
+        4. L'algorithme final de pivot de Gauss
+        5. Extraction d'un élément non nul du noyau (à partir d'une matrice triangulaire sup)
+        6. Fonction permettant de vérifier si un élément est dans le noyau  */
+void echange_lignes(int ligne1, int ligne2, int nb_ligne, int nb_colonne, liste* matrice);
+void plus_lignes(int ligne1, int ligne2, int nb_ligne, int nb_colonne, liste* matrice);
+int ligne_pivotable(int min, int nb_ligne, int nb_colonne, liste* matrice);
 void pivot_gauss(liste* matrice, int nb_ligne, int nb_colonne);
+void noyau(liste* matrice, int nb_ligne, int nb_colonne, liste* ker);
+int verif_noyau(liste* matrice, int nb_ligne, int nb_colonne, liste* ker);
 
+/*  Fonction finale permettant de décomposer n et de stocker son facteur dans 'resultat'.
+    Voici les codes erreur possibles :
+        -1 : n est premier (d'après Solovay-Strassen avec une précision k=10)
+        0 : L'algorithme a réussi à décomposer n
+        1 : L'algorithme n'a réussi à décomposer n avec aucun sous-ensemble  */
 int crible_quadratique(int n, int P, int A, mpz_t* resultat);
 
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                             FONCTIONS PRIMALITE (utiles pour le crible quadratique)                            |   
+    |                            FONCTION PRIMALITE (nécessaire pour le crible quadratique)                          |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
-/*  Test de Fermat : 
-        - Si renvoie 0 alors n n'est pas premier
-        - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(2^k) 
-    Remarque : Nécessite l'existence de c tel que c^{n-1} != 1 [n] 
-*/
-int test_fermat(int n, int k);
-
 /*  Test de Solovay-Strassen : 
         - Si renvoie 0 alors n n'est pas premier
         - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(2^k)
 */
 int test_solovay_strassen(int n, int k);
-
-/*  Test de Miller-Rabin : 
-        - Si renvoie 0 alors n n'est pas premier
-        - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(4^k)
-*/
-int test_miller_rabin(int n, int k);
 
 
 /*  |----------------------------------------------------------------------------------------------------------------|
@@ -102,7 +116,6 @@ int test_miller_rabin(int n, int k);
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
-int ordre_deux(int m);          //  La 2-valuation de m (peut être remplacé par valuation(m, 2))
 int puissance(int m, int e);    //  Renvoie m^e
 int modulo(int a, int b);                       //  Renvoie a mod b
 int puissance_modulo(int m, int e, int p);      //  Renvoie m^e mod p
@@ -112,6 +125,8 @@ int racine_carree_entiere_mn(int n);    //  Racine carrée entière de n (algo n
 int jacobi(int a, int b);       //  Symbole de Jacobi
 void affichage_liste(liste* l); //  Permet l'affichage d'une liste
 void affichage_decomposition(decomposition* D); //  Affiche la décomposition D (de l'entier D->valeur)
-void affichage_ensemble(ensemble_b_lisse* S);
+void affichage_ensemble(ensemble_b_lisse* S);   //  Affiche l'ensemble S d'éléments lisses.
+int indice_matrice(int ligne, int colonne, int nb_ligne, int nb_colonne);
+void affichage_matrice(int nb_ligne, int nb_colonne, liste* M); //  Affiche la matrice M
 
 #endif // TEST_PRIMALITE_INCLUDED

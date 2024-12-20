@@ -3,25 +3,16 @@
 /*  SOMMAIRE : 
     1. Fonctions maths intermédiaires
     2. Test de primalité
-    3. Factorisation
-        - Factorisation de Rho-Pollard 
-        - Factorisation via crible quadratique (algorithme de Dixon)
+    3. Factorisation de Rho-Pollard 
+    4. Factorisation via le crible quadratique
  */
+
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
     |                                         1. FONCTIONS INTERMEDIAIRES                                            |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
-int ordre_deux(int m){
-    int i = 0;
-    while (m % 2 == 0){
-        i++;
-        m = m/2;
-    }
-    return i;
-}
-
 int puissance(int m, int e){
     if ( e==0 ){
         return 1;
@@ -36,19 +27,6 @@ int puissance(int m, int e){
 
 int modulo(int a, int b){
     return a%b + (b * (a%b<0));
-}
-
-long long modulo_positif(long long a, long long b) {
-    if (b <= 0) {
-        printf("Erreur : le diviseur doit être strictement positif.\n");
-        return -1; // Retourne une erreur si b <= 0
-    }
-
-    long long mod = a % b;
-    if (mod < 0) {
-        mod += b;
-    }
-    return mod;
 }
 
 int puissance_modulo(int m, int e, int p){
@@ -75,15 +53,6 @@ int pgcd(int a, int b){
         r2 = modulo(r0, r1);
     }
     return r1;
-}
-
-long int long_pgcd(long int a, long int b) {
-    while (b != 0) {
-        long int temp = b;
-        b = a % b;
-        a = temp;
-    }
-    return a;
 }
 
 int partie_entiere(double n){
@@ -125,7 +94,6 @@ int jacobi(int a, int b){
             b = inter_reserve; 
         }
     }
-
     if ( a == 1 ){
         return signe;
     }
@@ -188,37 +156,21 @@ void affichage_matrice(int nb_ligne, int nb_colonne, liste* M){
 
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                           2. FONCTIONS PRIMALITE (utiles pour le crible quadratique)                           |   
+    |                         2. FONCTION PRIMALITE (nécessaire pour le crible quadratique)                          |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
-/*  Test de Fermat : 
-        - Si renvoie 0 alors n n'est pas premier
-        - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(2^k) 
-    Remarque : Nécessite l'existence de c tel que c^{n-1} != 1 [n] 
-*/
-int test_fermat(int n, int k){
-    int b;
-    for(int i=0; i<k; i++){
-        b = 2 + (rand()%(n-4));
-        if(pgcd(n, b) == 1){
-            if(puissance_modulo(b, n-1, n) != 1){
-                return 0;
-            }
-        }
-        else{
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
 /*  Test de Solovay-Strassen : 
         - Si renvoie 0 alors n n'est pas premier
         - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(2^k)
 */
 int test_solovay_strassen(int n, int k){
+    if(n==4){
+        return 0;
+    }
+    if(n==2){
+        return 1;
+    }
     int b;
     for(int i=0; i<k; i++){
         b = 2 + (rand()%(n-4));
@@ -234,54 +186,14 @@ int test_solovay_strassen(int n, int k){
     return 1;
 }
 
-
-/*  Test de Miller-Rabin : 
-        - Si renvoie 0 alors n n'est pas premier
-        - si renvoie 1 alors n est premier avec proba supérieur à 1-1/(4^k)
-*/
-int test_miller_rabin(int n, int k){
-    int s = ordre_deux(n-1);
-    int t = (n-1)/(puissance(2, s));
-    int b; 
-    int b_puissance_t;
-    int b_puissance_finale;
-    for(int j=0; j<k; j++){
-        b = 2 + (rand()%(n-4));
-        if(pgcd(n, b) == 1){
-            b_puissance_t = puissance_modulo(b, t, n);
-            if(b_puissance_t != -1 && b_puissance_t != 1){
-                for(int i=1; i<s-1; i++){
-                    b_puissance_finale = puissance_modulo(b_puissance_t, puissance(2, i), n);
-                    if(b_puissance_finale == n-1){
-                        break;
-                    }
-                    else if(b_puissance_finale == 1){
-                        return 0;
-                    }
-                }
-                b_puissance_finale = puissance_modulo(b_puissance_t, puissance(2, s-1), n);
-                if(b_puissance_finale == n-1 || b_puissance_finale == 1){
-                    return 0;
-                }
-            }
-        }
-        else{
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
-    |                                               3. FACTORISATION                                                 |   
+    |                                      3. FACTORISATION DE RHO-POLLARD                                           |   
     |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|                                                     
  */
 /*  Factorisation de Rho-Pollard: 
-        - Via librairie GMP
-        - choix du FPA : y -> y^2 + c
+        - Choix du FPA : y -> y^2 + c
 */
 void FPA1(mpz_t* y, mpz_t* n, mpz_t* c){
     mpz_mul(*y, *y, *y);    // y -> y^2
@@ -333,19 +245,20 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
 }
 
 
-/*  Factorisation via l'algorithme de Dixon: 
-        Utilisant le crible quadratique:
-            - Etant données les bornes P et A, on prendra comme base de premiers:
-                B = {p premier | p<P et jacobi(n,p)=1}
-              On définira ensuite l'ensemble
-                S = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
-              Et on cherche les entiers B-lisses de cet ensemble
-                (on s'intéresse aux sous-ensembles à |B|+1 éléments)
+/*  |----------------------------------------------------------------------------------------------------------------|
+    |----------------------------------------------------------------------------------------------------------------|
+    |                                4. FACTORISATION VIA LE CRIBLE QUADRATIQUE                                      |   
+    |----------------------------------------------------------------------------------------------------------------|
+    |----------------------------------------------------------------------------------------------------------------|                                                     
+ */
+/*  Factorisation via le crible quadratique: 
+        Etant données les bornes P et A, on prendra comme base de premiers:
+        B = {p premier | p<P et jacobi(n,p)=1}
 */
 void base_de_premiers(int n, int P, liste* B){
     B->taille = 0;
     B->element = calloc(P, sizeof(int));
-    int precision_test_primalite = 10;
+    int precision_test_primalite = 100;
     B->taille++;
     B->element[B->taille-1] = 2;
     for(int i = 3; i<P; i++){
@@ -359,7 +272,6 @@ void base_de_premiers(int n, int P, liste* B){
     B->element = realloc(B->element, B->taille*sizeof(int));
 }
 
-// Calcule v_p(b)
 int valuation(int b, int p){
     int i = 0;
     while (b % p == 0){
@@ -395,8 +307,11 @@ int decomposition_entier(int b, liste* B, decomposition* D){
     }
 }
 
-/*  Parcourt l'ensemble S' = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A} et extrait les éléments
-    B-lisses pour les stocker dans S (avec leurs décompositions et les indices t) */
+/*  On définira ensuite l'ensemble
+        S' = {t^2-n | sqrt(n)+1 =< t =< sqrt(n)+A}
+    Et on prend S, le sous-ensemle formé des éléments B-lisses. Remarques: 
+        - S.t_element contient les indices t
+        - S.element_dec contient la décomposition de t^2-n dans S.base_premiers = B  */
 void ensemble_crible_quadratique(int n, int A, liste* B, ensemble_b_lisse* S){
     S->element_dec = calloc(A, sizeof(decomposition));
     S->t_element = calloc(A, sizeof(int));
@@ -417,10 +332,14 @@ void ensemble_crible_quadratique(int n, int A, liste* B, ensemble_b_lisse* S){
     S->t_element = realloc(S->t_element, S->cardinal*sizeof(int));
 }
 
-/*  Il se peut qu'on ait besoin de trouver plusieurs sous-ensembles à |B|+1 éléments de S
-    Cette fonction permet de fixer une injection a->b, représentée par la liste L
-    Les injections possibles sont indexées par num_injection et ici nous considérons uniquement
-    les injections de base : x -> x + num_injection */
+/*  On choisit un sous-ensemble de S à |B|+1 éléments. Il se peut que le sous-ensemble
+    choisi ne convienne pas. Il nous faut ainsi une fonction permettant de 'classifier' 
+    un certain nombre de ces sous-ensembles.
+    Pour cela on crée une fonction choisissant une injection |B|+1 dans |S|
+    Ici, on classifie ces injections suivant num_injection
+    Ainsi, dans le crible quadratique on pourra parcourir ces injetions
+    Remarque : ici nous considérons uniquement les injections de base qui sont les :
+        x -> x + num_injection  */
 void injection(int a, int b, int num_injection, liste* L){
     L->taille = a;
     L->element = calloc(L->taille, sizeof(int));
@@ -429,9 +348,9 @@ void injection(int a, int b, int num_injection, liste* L){
     }
 }
 
-/*  Une fois qu'on a choisi notre sous-ensemble à |B|+1 éléments, on construit la matrice dont les coefficients
-    sont les valuations dans la base B. Ici les éléments sont représentés par les colonnes 
-      -> Remarque : la matrice est représentée par une liste dans la quelle on stocke colonne par colonne */
+/*  Une fois qu'on fixe un sous-ensemble noté sous_ensemble, on écris sa matrice
+    qui, par définitions, contient la décomposition du i-ème éléments dans sa i-ème colonne
+    La matrice résultat est de dimension |B|x|sous_ensemble| */
 void matrice_de_decomposition(liste* sous_ensemble, ensemble_b_lisse* S, liste* matrice){
     int nb_ligne = (S->base_premiers)->taille;  // Le nombre total de premiers
     int nb_colonne = sous_ensemble->taille;     // Le nombre d'éléments de sous-ensemble
@@ -445,14 +364,15 @@ void matrice_de_decomposition(liste* sous_ensemble, ensemble_b_lisse* S, liste* 
     }
 }
 
-/*  Fonctions appliquant les opérations de base nécessaires pour le pivot de pivot Gauss:
+/*  On applique le pivot de Gauss à la matrice précédemment calculée et on extrait un élément
+    non nul de son noyeau.
+    Les fonctions appliquant les opérations de base nécessaires pour le pivot de pivot Gauss:
         1. Echange de lignes
         2. Addition de lignes
         3. Recherche de la prochaine ligne à déplacer
         4. L'algorithme final de pivot de Gauss
         5. Extraction d'un élément non nul du noyau (à partir d'une matrice triangulaire sup)
-        6. Fonction permettant de vérifier si un élément est dans le noyau
- */
+        6. Fonction permettant de vérifier si un élément est dans le noyau  */
 void echange_lignes(int ligne1, int ligne2, int nb_ligne, int nb_colonne, liste* matrice){
     int* temp = calloc(nb_colonne, sizeof(int));
     // Sauvegarde de ligne1 dans temp
@@ -574,12 +494,14 @@ int verif_noyau(liste* matrice, int nb_ligne, int nb_colonne, liste* ker){
     Remarque : on décide de nouveau utiliser la librairie gmp car les produits des 
     éléments b_i B-lisses deviendront rapidement très grands  */
 int crible_quadratique(int n, int P, int A, mpz_t* resultat){
+    printf("jsuis la \n");
     if(test_solovay_strassen(n, 10)==1){
         return -1;  // n est premier
     }
     // Liste B contenant la base de premiers
     liste B;
     base_de_premiers(n, P, &B);
+
     // L'ensemble des éléments B-lisses
     ensemble_b_lisse S;
     ensemble_crible_quadratique(n, A, &B, &S);
@@ -620,6 +542,8 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
     for(int i=0; i<nb_ss_ens; i++){
         printf("\nBoucle numéro %d.\n", i);
         injection(B.taille+1, S.cardinal, i, &ss_ens_S);    // On fixe le i-ème sous-ensemble
+        printf("\nSous-ensemble actuel");
+        affichage_liste(&ss_ens_S);
 
         // On calcule la matrice des valuations pour ce sous-ensemble
         matrice_de_decomposition(&ss_ens_S, &S, &matrice);
@@ -633,7 +557,7 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
 
         affichage_liste(&ker);
 
-        // Calcule du produit des b_i sélectionnés
+        // Calcule du produit t (avec l'actuel sous-ensemble)
         for(int i=0; i<B.taille+1; i++){
             if(ker.element[i] == 1){
                 mpz_mul_si(t, t, S.t_element[ss_ens_S.element[i]]);
@@ -674,25 +598,34 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
         /*  Si t = s [n] ou t = -s [n], alors on n'obtient pas de facteur non trivial.
             On refait tout avec un nouvel sous-ensemble  */
         if( mpz_cmp(t_reduit, s_reduit) == 0 || mpz_cmp(t_reduit, _s_reduit) == 0 ){
-            printf("échoué");
+            fausse_piste:
             free(ss_ens_S.element);
             free(matrice.element);
             free(ker.element);
             free(valuations_s);
             mpz_set_str(t, "1", 10);
             mpz_set_str(s, "1", 10);
+            gmp_printf("\nt actualisé : %Zd\n", t);
         }
-        /*  Si t = +-s [n], on a alors un facteur non trivial qui est pgcd(t+s, n)
+        /*  Si t != +-s [n], on a alors un facteur non trivial qui est pgcd(t+s, n)
             On le stocke dans 'resultat' et l'algorithme se termine  */
         else{
-            printf("réussi");
             mpz_t somme_t_s;
             mpz_init(somme_t_s);
             mpz_add (somme_t_s, t, s);
             mpz_gcd(*resultat, somme_t_s, mpz_n);
+            mpz_t mpz_1;
+            mpz_init_set_str(mpz_1, "1", 10);
+            if(mpz_cmp(mpz_1, *resultat) == 0){
+                mpz_clear(mpz_1);
+                mpz_clear(somme_t_s);
+                goto fausse_piste;
+            }
+            mpz_clear(somme_t_s);
             return 0;
         }
     }
-    mpz_clears(mpz_n, t, s, t_reduit, s_reduit, _s_reduit);
+    //printf("jsuis la \n");
+    // mpz_clears(mpz_n, t, s, t_reduit, s_reduit, _s_reduit);
     return 1;
 }

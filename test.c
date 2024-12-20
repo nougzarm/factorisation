@@ -8,7 +8,7 @@
 
 int main() {
     // CHOIX DE L'OPÉRATION --------------------------------------------------------
-    int choix_test = 1;
+    int choix_test = 2;
 
     // CONFIGURATION - CHOIX DES PARAMETRES ----------------------------------------
     mpz_t n1;
@@ -20,7 +20,7 @@ int main() {
         n = 1042387
     */
 
-    int n = 1042387;
+    int n = 18;
     int P = 50;
     int A = 500;
 
@@ -74,6 +74,7 @@ void test(int choix_test, mpz_t* n1, int n, int P, int A){
             printf("\nErreur %d: Aucun sous-ensemble possible pour les bornes A et P. Ie |S|<|B|+1", reussite);
             printf("\nChoisir de nouvelles valeurs de P et/ou A");
         }
+        mpz_clear(resultat);
     }
 
     else if(choix_test == -1){
@@ -90,6 +91,5 @@ void test(int choix_test, mpz_t* n1, int n, int P, int A){
         // free(dec_m.valuation);
         free(B.element);
     }
-
     return;
 }
