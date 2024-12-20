@@ -19,6 +19,14 @@ typedef struct{
     liste* base_premiers;
 }decomposition;
 
+//  Structure d'ensemble d'entiers B-lisses (où B est une base de premiers)
+typedef struct{
+    int cardinal;
+    int* t_element;
+    decomposition* element_dec;
+    liste* base_premiers;
+}ensemble_b_lisse;
+
 /*  |----------------------------------------------------------------------------------------------------------------|
     |----------------------------------------------------------------------------------------------------------------|
     |                                           FONCTIONS FACTORISATION                                              |   
@@ -33,6 +41,14 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c);   // Fonction pseudo-aléatoire FPA1 : 
 int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
 
 
+/*  Factorisation via l'algorithme naïf: 
+      On pose m=sqrt(n) et on teste si m^2-n est un carré parfait:
+        - Si oui, n = (m-s)(m+s) où s^2=m^2-n
+        - Sinon m=m+1, et on recommence
+*/
+int factorisation_naif(int n);
+
+
 /*  Factorisation via l'algorithme de Dixon: 
         - Utilisant le crible quadratique:
           Etant données les bornes P et A, on prendra comme base de premiers:
@@ -45,6 +61,21 @@ void base_de_premiers(int n, int P, liste* B);
     (on essaye de trouver |B|+1 tels éléments) */
 int valuation(int b, int p);
 int decomposition_entier(int b, liste* base_premiers, decomposition* D);
+void ensemble_crible_quadratique(int n, int A, liste* B, ensemble_b_lisse* S);
+/*  On choisit un sous-ensemble de S à |B|+1 éléments (de manière exhaustive)
+    Pour cela on crée une fonction choisissant une injection |B|+1 dans |S|
+    Ici, on classifie ces injections suivant num_injection
+    Ainsi, dans le crible quadratique on pourra parcourir ces injetions  */
+void injection(int a, int b, int num_injection, liste* L);
+
+/*  On prend ce sous-ensemble à |B|+1 éléments B-lisses et on écris sa matrice
+    qui, par définitions, contient la décomposition du i-ème éléments dans sa i-ème colonne
+    ici la liste sous-ensemble est issue de injection() et la matrice résultat est
+    de dimension |B|x|sous_ensemble| */
+void matrice_de_decomposition(liste* sous_ensemble, ensemble_b_lisse* S, liste* matrice);
+void pivot_gauss(liste* matrice, int nb_ligne, int nb_colonne);
+
+int crible_quadratique(int n, int P, int A, mpz_t* resultat);
 
 
 /*  |----------------------------------------------------------------------------------------------------------------|
@@ -88,5 +119,7 @@ int partie_entiere(double n);           //  Partie entière de n
 int racine_carree_entiere_mn(int n);    //  Racine carrée entière de n (algo naïf)
 int jacobi(int a, int b);       //  Symbole de Jacobi
 void affichage_liste(liste* l); //  Permet l'affichage d'une liste
+void affichage_decomposition(decomposition* D); //  Affiche la décomposition D (de l'entier D->valeur)
+void affichage_ensemble(ensemble_b_lisse* S);
 
 #endif // TEST_PRIMALITE_INCLUDED
