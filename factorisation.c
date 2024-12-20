@@ -684,13 +684,6 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
         gmp_printf("\n -s mod n : %Zd", _s_reduit);
 
         gmp_printf("\n n : %Zd", mpz_n);
-
-       /*  int mpz_cmp (const mpz t op1, const mpz t op2)
-[Function]int mpz_cmp_d (const mpz t op1, double op2)
-[Macro]int mpz_cmp_si (const mpz t op1, signed long int op2)
-[Macro]int mpz_cmp_ui (const mpz t op1, unsigned long int op2)
-Compare op1 and op2. Return a positive value if op1 > op2, zero if op1 = op2, or a negative
-value if op1 < op2 */
         
         /*  Si t = s [n] ou t = -s [n], alors on n'obtient pas de facteur non trivial.
             On refait tout avec un nouvel sous-ensemble  */
@@ -700,6 +693,8 @@ value if op1 < op2 */
             free(matrice.element);
             free(ker.element);
             free(valuations_s);
+            mpz_set_str(t, "1", 10);
+            mpz_set_str(s, "1", 10);
         }
         /*  Si t = +-s [n], on a alors un facteur non trivial qui est pgcd(t+s, n)
             On le stocke dans 'resultat' et l'algorithme se termine  */

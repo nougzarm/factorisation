@@ -22,9 +22,9 @@ int main() {
         n = 1042387
     */
 
-    int n = 1042387;
+    int n = 10;
     int P = 50;
-    int A = 500;
+    int A = 100;
 
     // AFFICHAGE DE LA CONFIGURATION -----------------------------------------------
     printf("----------------------------------------------------------------- \n");
@@ -72,14 +72,14 @@ void test(int choix_test, mpz_t* n1, int n, int P, int A){
         mpz_t resultat;
         mpz_init(resultat);
         int reussite = crible_quadratique(n, P, A, &resultat);
-        if(resultat == 0){
-            printf("\nL'algorithme n'a pas réussi à factoriser n\n");
+        if(reussite == 0){
+            printf("\nL'algorithme n'a pas réussi à factoriser n");
         }
         else{
             gmp_printf("\nL'algorithme a réussi à factoriser n, voici un facteur trouvé : %Zd", resultat);
         };
     }
-    
+
     else if(choix_test == 3){
         int facteur = factorisation_naif(n);
         printf("Factorisation de n= via l'algo naïf; voici un facteur de n : %d", facteur);
