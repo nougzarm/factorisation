@@ -315,7 +315,6 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
     int condition2 = mpz_cmp(potentiel_facteur, mpz_1);
 
     while(condition1*condition2 == 0){
-        gmp_printf ("Potentiel facteur : %Zd\n", potentiel_facteur);
         // On actualise les termes de la suite
         FPA1(premier, n, &mpz_c);
         FPA1(&second, n, &mpz_c);
@@ -329,36 +328,8 @@ int factorisation_rho_pollard_sm(mpz_t* premier, mpz_t* n, mpz_t* resultat){
         condition2 = mpz_cmp(potentiel_facteur, mpz_1);
     }
     mpz_set(*resultat, potentiel_facteur);   // Stockage du résultat
-    // mpz_clears(potentiel_facteur, mpz_c, mpz_1);    //  Suppression de la mémoire allouée
+    mpz_clear(potentiel_facteur);  //  Suppression de la mémoire allouée
     return 1;
-}
-
-
-/*  Factorisation via l'algorithme naïf: 
-      On pose m=sqrt(n) et on teste si m^2-n est un carré parfait:
-        - Si oui, n = (m-s)(m+s) où s^2=m^2-n
-        - Sinon m=m+1, et on recommence
-*/
-int test_carre_parfait(int a){
-    int racine = racine_carree_entiere_mn(a);
-    if(racine*racine == a){
-        return 1;
-    }
-    else{
-        return 0;
-    }
-}
-
-int factorisation_naif(int n){
-    int m = racine_carree_entiere_mn(n)+1;
-    printf("m=%d", m);
-    int test = test_carre_parfait(m*m-n);
-    while(test == 0){
-        m++;
-        test = test_carre_parfait(m*m-n);
-    }
-    int s=racine_carree_entiere_mn(m*m-n);
-    return m-s;
 }
 
 
@@ -594,18 +565,40 @@ int verif_noyau(liste* matrice, int nb_ligne, int nb_colonne, liste* ker){
     return resultat;
 }
 
-/*  Fonction finale permettant de décomposer n et de stocker son facteur dans 'resultat'
-        - Retourne 1 si c'est réussi (et donc lire 'resultat')
-        - Retourne 0 si echec  
-      -> Remarque : on décide de nouveau utiliser la librairie gmp car les produits des 
-         éléments b_i B-lisses deviendront rapidement très grands  */
+/*  Fonction finale permettant de décomposer n et de stocker son facteur dans 'resultat'.
+    Voici les codes erreur possibles :
+        -1 : n est premier (d'après Solovay-Strassen avec une précision k=10)
+        0 : L'algorithme a réussi à décomposer n
+        1 : L'algorithme n'a réussi à décomposer n avec aucun sous-ensemble
+        2 : Aucun sous-ensemble possible pour les bornes A et P. Ie |S|<|B|+1
+    Remarque : on décide de nouveau utiliser la librairie gmp car les produits des 
+    éléments b_i B-lisses deviendront rapidement très grands  */
 int crible_quadratique(int n, int P, int A, mpz_t* resultat){
+    if(test_solovay_strassen(n, 10)==1){
+        return -1;  // n est premier
+    }
     // Liste B contenant la base de premiers
     liste B;
     base_de_premiers(n, P, &B);
     // L'ensemble des éléments B-lisses
     ensemble_b_lisse S;
     ensemble_crible_quadratique(n, A, &B, &S);
+
+    // Affichage de B et S
+    printf("  - On a comme base de premiers B = {p premier | p<P et jacobi(n,p)=1} = ");
+    base_de_premiers(n, P, &B);
+    affichage_liste(&B);
+    printf("\n  - Puis, on extrait l'ensemble suivant des éléments B-lisses");
+    printf("\n    S = {t^2-n B-lisse | sqrt(n)+1 =< t =< sqrt(n)+A} \n      = ");
+    affichage_ensemble(&S);
+    printf("\n");
+
+    /*  On vérifie si il est possible de prendre |B|+1 éléments distincts dans S
+        si oui on passe à la suite */
+    int nb_ss_ens = S.cardinal-(B.taille+1)+1;
+    if(nb_ss_ens < 1){
+        return 2; // S possède moins de |B|+1 éléments. 
+    }
 
     // Une boucle pour chaque sous-ensemble de S à |B|+1 éléments
     liste ss_ens_S; // le sous-ensemble actuel
@@ -620,22 +613,16 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
     mpz_t t_reduit, s_reduit, _s_reduit;
     mpz_inits(t_reduit, s_reduit, _s_reduit);
 
-    int nb_ss_ens = S.cardinal-(B.taille+1)+1;  // Cas particulier où on prend les |B|+1 éléments de S.
-    // Une boucle où chaque tour correspond à un sous-ensemble à |B|+1 éléments de S
-
     // Utile pour les opérations dans la librairie gmp (en fin de boucle)
     mpz_t mpz_n;
     mpz_init_set_si(mpz_n, n);
 
     for(int i=0; i<nb_ss_ens; i++){
+        printf("\nBoucle numéro %d.\n", i);
         injection(B.taille+1, S.cardinal, i, &ss_ens_S);    // On fixe le i-ème sous-ensemble
 
         // On calcule la matrice des valuations pour ce sous-ensemble
         matrice_de_decomposition(&ss_ens_S, &S, &matrice);
-
-        printf("\n");
-        affichage_matrice(B.taille, B.taille+1, &matrice);
-        printf("\n");
 
         // On trigonalise la matrice
         pivot_gauss(&matrice, B.taille, B.taille+1);
@@ -650,7 +637,6 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
         for(int i=0; i<B.taille+1; i++){
             if(ker.element[i] == 1){
                 mpz_mul_si(t, t, S.t_element[ss_ens_S.element[i]]);
-                printf("\n %ld", S.t_element[ss_ens_S.element[i]]);
             }
         }
         printf("\n voici le produit t : %Zd", t);
@@ -704,8 +690,9 @@ int crible_quadratique(int n, int P, int A, mpz_t* resultat){
             mpz_init(somme_t_s);
             mpz_add (somme_t_s, t, s);
             mpz_gcd(*resultat, somme_t_s, mpz_n);
-            return 1;
+            return 0;
         }
     }
-    return 0;
+    mpz_clears(mpz_n, t, s, t_reduit, s_reduit, _s_reduit);
+    return 1;
 }

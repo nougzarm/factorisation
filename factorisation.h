@@ -41,14 +41,6 @@ void FPA1(mpz_t* y, mpz_t* n, mpz_t* c);   // Fonction pseudo-aléatoire FPA1 : 
 int factorisation_rho_pollard_sm(mpz_t* y_0, mpz_t* n, mpz_t* resultat);
 
 
-/*  Factorisation via l'algorithme naïf: 
-      On pose m=sqrt(n) et on teste si m^2-n est un carré parfait:
-        - Si oui, n = (m-s)(m+s) où s^2=m^2-n
-        - Sinon m=m+1, et on recommence
-*/
-int factorisation_naif(int n);
-
-
 /*  Factorisation via l'algorithme de Dixon: 
         - Utilisant le crible quadratique:
           Etant données les bornes P et A, on prendra comme base de premiers:
