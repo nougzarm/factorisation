@@ -21,7 +21,7 @@ int main() {
     */
 
     mpz_t n;
-    mpz_init_set_str(n, "45", 10);
+    mpz_init_set_str(n, "1042387", 10);
     int P = 50;
     int A = 500;
 
@@ -37,8 +37,7 @@ int main() {
     printf("\n----------------------------------------------------------------- \n");
 
     // SUPPRESSION DE LA MEMOIRE ALLOUEE
-    mpz_clear(n);
-    mpz_clear(n1);
+    mpz_clears(n, n1);
     return 1;
 }
 
@@ -59,21 +58,22 @@ void test(int choix_test, mpz_t* n1, mpz_t* n, int P, int A){
 
     /*  Décomposition de n via le crible quadratique  */
     else if(choix_test == 2){
-        gmp_printf("Factorisation de n = %Zd, avec les bornes P = %d et A = %d :\n", *n, P, A);
+        printf("Crible quadratique :");
+        gmp_printf("\nFactorisation de n = %Zd, avec les bornes P = %d et A = %d :\n", *n, P, A);
         mpz_t resultat;
         mpz_init(resultat);
-        int reussite = crible_quadratique(n, P, A, &resultat);
-        if(reussite == 1){
-            printf("\nL'algorithme n'a pas réussi à factoriser n");
+        int code = crible_quadratique(n, P, A, &resultat);
+        if(code == 1){
+            printf("\nErreur %d: L'algorithme n'a pas réussi à factoriser n", code);
         }
-        else if(reussite == 0){
-            gmp_printf("\nL'algorithme a réussi à factoriser n, voici un facteur trouvé : %Zd", resultat);
+        else if(code == 0){
+            gmp_printf("\nErreur %d: L'algorithme a réussi à factoriser n, voici le facteur trouvé : %Zd", code, resultat);
         }
-        else if(reussite == -1){
-            printf("\nD'après Solovay Strassen, n est premier");
+        else if(code == -1){
+            printf("\nErreur %d: Impossible à décomposer, n est premier", code);
         }
-        else if(reussite == 2){
-            printf("\nErreur %d: Aucun sous-ensemble possible pour les bornes A et P. Ie |S|<|B|+1", reussite);
+        else if(code == 2){
+            printf("\nErreur %d: Aucun sous-ensemble possible pour les bornes A et P. Ie |S|<|B|+1", code);
             printf("\nChoisir de nouvelles valeurs de P et/ou A");
         }
         mpz_clear(resultat);
