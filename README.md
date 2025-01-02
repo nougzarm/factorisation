@@ -32,3 +32,12 @@ des t_i tels que (t_i)^2-n est dans F. On a alors t^2 = s^2 mod n.
 
 Pour finir, on teste si t = +- s mod n. Si ce n'est pas le cas, alors on a décomposé n et un 
 de ses facteurs est pgcd(t+s, n). Sinon, on recommence avec un nouvel sous-ensemble de S
+
+# Configuration
+
+Nous importons la librairie GMP afin de pouvoir utiliser des nombres entiers arbitrairement grands.
+Consulter le PDF pour la documentation et modifier le fichier MAKEFILE dans le cas où la librairie est installée
+dans un répertoire différent.
+
+Le MAKEFILE présent compile les fichiers pour créer un programme test permettant de tester les fonctions du fichier
+source principal factorisation.c
